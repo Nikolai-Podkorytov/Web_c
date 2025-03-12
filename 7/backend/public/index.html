@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite User Management</title>
+    <script>
+        async function addUser() {
+            const name = document.getElementById('name').value;
+            const address = document.getElementById('address').value;
+            
+            if (!name || !address) {
+                alert('Please enter both name and address');
+                return;
+            }
+            
+            const response = await fetch('/add-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, address })
+            });
+            
+            const result = await response.text();
+            alert(result);
+            fetchUsers();
+        }
+
+        async function fetchUsers() {
+            const response = await fetch('/get-users');
+            const users = await response.json();
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+            
+            users.forEach(user => {
+                userList.innerHTML += `<li>${user.id}: ${user.name} - ${user.address} 
+                    <button onclick="deleteUser(${user.id})">Delete</button></li>`;
+            });
+        }
+
+        async function deleteUser(id) {
+            const response = await fetch(`/delete-user/${id}`, { method: 'DELETE' });
+            const result = await response.text();
+            alert(result);
+            fetchUsers();
+        }
+
+        window.onload = fetchUsers;
+    </script>
+</head>
+<body>
+    <h2>User Management</h2>
+    <input type="text" id="name" placeholder="Enter Name">
+    <input type="text" id="address" placeholder="Enter Address">
+    <button onclick="addUser()">Add User</button>
+    
+    <h3>Users List</h3>
+    <ul id="user-list"></ul>
+</body>
+</html>
